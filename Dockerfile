@@ -23,6 +23,7 @@ ENV LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${INSTPATH}/lib"
 ENV INCLUDE="$INCLUDE:${INSTPATH}/include"
 ENV ncores=4
 ENV CFLAGS=-fPIC
+ENV CC=gcc
 
 RUN mkdir DC
 
@@ -95,8 +96,6 @@ ARG nasm_versn=${nasm_major}.${nasm_minor}.${nasm_micro}
 
 WORKDIR /DC
 
-ENV CC=gcc
-
 RUN mkdir nasm
 
 WORKDIR /DC/nasm
@@ -125,8 +124,6 @@ ARG yasm_versn=${yasm_major}.${yasm_minor}.${yasm_micro}
 
 WORKDIR /DC
 
-ENV CC=gcc
-
 RUN mkdir yasm
 
 WORKDIR /DC/yasm
@@ -143,3 +140,32 @@ make -j && \
 make install -j
 
 RUN echo "YASM Complete"
+
+##################################################################
+######################### libjpegturbo ###########################
+##################################################################
+
+ARG ljpt_major=1
+ARG ljpt_minor=1
+ARG ljpt_micro=90
+ARG ljpt_versn=${ljpt_major}.${ljpt_minor}.${ljpt_micro}
+
+WORKDIR /DC
+
+RUN mkdir ljpt
+
+WORKDIR /DC/ljpt
+
+
+RUN echo "Download libjpegturbo..." && \
+wget "https://sourceforge.net/projects/libjpeg-turbo/files/${ljpt_versn}%20%281.2beta1%29/libjpeg-turbo-${ljpt_versn}.tar.gz" && \
+tar xzvf libjpeg-turbo-${ljpt_versn}.tar.gz
+
+WORKDIR /DC/ljpt/libjpeg-turbo-${ljpt_versn}
+
+RUN echo "Build and install libjpegturbo...." && \
+./configure --prefix="$INSTPATH" && \
+make -j && \
+make install -j
+
+RUN echo "Libjpegturbo Complete"
