@@ -31,6 +31,10 @@ RUN mkdir DC
 ######################## OpenMPI #########################
 ##########################################################
 
+RUN echo "############################################################" && \
+echo "OPENMPI" & \
+echo "############################################################"
+
 WORKDIR /DC
 
 RUN mkdir ompi
@@ -42,22 +46,34 @@ ARG ompi_minor=4
 ARG ompi_micro=1
 ARG ompi_versn=${ompi_major}.${ompi_minor}.${ompi_micro}
 
-RUN echo "Download OPEN MPI..." && \ 
-wget https://download.open-mpi.org/release/open-mpi/v${ompi_major}.${ompi_minor}/openmpi-${ompi_versn}.tar.gz && \
+RUN echo "######################" && \
+echo "Download OpenMPI..." & \
+echo "######################"
+ 
+RUN wget https://download.open-mpi.org/release/open-mpi/v${ompi_major}.${ompi_minor}/openmpi-${ompi_versn}.tar.gz && \
 tar xzvf openmpi-${ompi_versn}.tar.gz
 
 WORKDIR /DC/ompi/openmpi-${ompi_versn}
 
-RUN echo "Build and Install OpenMPI" && \
-./configure --enable-mpi-threads --prefix="${INSTPATH}" && \
+RUN echo "######################" && \
+echo "Build and Install OpenMPI..." & \
+echo "######################"
+
+RUN ./configure --enable-mpi-threads --prefix="${INSTPATH}" && \
 make -j && \
 make install -j
 
-RUN echo "MPI Complete"
+RUN echo "######################" && \
+echo "MPI Complete" & \
+echo "######################"
 
 ##########################################################
 ######################### Boost ##########################
 ##########################################################
+
+RUN echo "############################################################" && \
+echo "Boost" & \
+echo "############################################################"
 
 ARG boost_major=1
 ARG boost_minor=51
@@ -70,23 +86,38 @@ RUN mkdir boost
 
 WORKDIR /DC/boost
 
-RUN echo "Download Boost..." && \
-wget https://sourceforge.net/projects/boost/files/boost/${boost_versn}/boost_${boost_major}_${boost_minor}_${boost_micro}.tar.gz && \
+RUN echo "######################" && \
+echo "Download Boost..." & \
+echo "######################"
+
+RUN wget https://sourceforge.net/projects/boost/files/boost/${boost_versn}/boost_${boost_major}_${boost_minor}_${boost_micro}.tar.gz && \
 tar xzvf boost_${boost_major}_${boost_minor}_${boost_micro}.tar.gz
 
 WORKDIR /DC/boost/boost_${boost_major}_${boost_minor}_${boost_micro}
 
-RUN echo "Build Boost..." && \
-./bootstrap.sh --with-python=/usr/bin/python --with-python-version=2.7.5 --with-python-root=/usr --prefix="${INSTPATH}" --with-toolset=gcc --with-libraries=all
+RUN echo "######################" && \
+echo "Build Boost" & \
+echo "######################"
 
-RUN echo "Install Boost..." && \
-./b2 -j ${ncores} include="/usr/include/python2.7" --toolset=gcc --prefix="${INSTPATH}" install
+RUN ./bootstrap.sh --with-python=/usr/bin/python --with-python-version=2.7.5 --with-python-root=/usr --prefix="${INSTPATH}" --with-toolset=gcc --with-libraries=all
 
-RUN echo "Boost Complete"
+RUN echo "######################" && \
+echo "Install Boost..." & \
+echo "######################"
+
+RUN ./b2 -j ${ncores} include="/usr/include/python2.7" --toolset=gcc --prefix="${INSTPATH}" install
+
+RUN echo "######################" && \
+echo "Boost Complete" & \
+echo "######################"
 
 ##########################################################
 ######################### NASM ###########################
 ##########################################################
+
+RUN echo "############################################################" && \
+echo "NASM" & \
+echo "############################################################"
 
 ARG nasm_major=2
 ARG nasm_minor=14
@@ -100,22 +131,34 @@ RUN mkdir nasm
 
 WORKDIR /DC/nasm
 
-RUN echo "Download NASM...." && \ 
-wget https://www.nasm.us/pub/nasm/releasebuilds/${nasm_versn}/nasm-${nasm_versn}.tar.gz && \
+RUN echo "######################" && \
+echo "Download NASM..." & \
+echo "######################"
+
+RUN wget https://www.nasm.us/pub/nasm/releasebuilds/${nasm_versn}/nasm-${nasm_versn}.tar.gz && \
 tar xvfz nasm-${nasm_versn}.tar.gz
 
 WORKDIR /DC/nasm/nasm-${nasm_versn}
 
-RUN echo "Build and install NASM..." && \
-./configure --prefix="${INSTPATH}" && \
+RUN echo "######################" && \
+echo "Build and Install NASM...." & \
+echo "######################"
+
+RUN ./configure --prefix="${INSTPATH}" && \
 make -j && \
 make install -j
 
-RUN echo "NASM Complete"
+RUN echo "######################" && \
+echo "NASM Complete" & \
+echo "######################"
 
 ##########################################################
 ######################### YASM ###########################
 ##########################################################
+
+RUN echo "############################################################" && \
+echo "YASM" & \
+echo "############################################################"
 
 ARG yasm_major=1
 ARG yasm_minor=3
@@ -128,22 +171,35 @@ RUN mkdir yasm
 
 WORKDIR /DC/yasm
 
-RUN echo "Download YASM...." && \ 
-wget http://www.tortall.net/projects/yasm/releases/yasm-${yasm_versn}.tar.gz && \
+RUN echo "######################" && \
+echo "Download YASM...." & \
+echo "######################"
+
+RUN wget http://www.tortall.net/projects/yasm/releases/yasm-${yasm_versn}.tar.gz && \
 tar xvfz yasm-${yasm_versn}.tar.gz
 
 WORKDIR /DC/yasm/yasm-${yasm_versn}
 
-RUN echo "Build and install YASM..." && \
-./configure --prefix="${INSTPATH}" && \
+RUN echo "######################" && \
+echo "Build and Install YASM..." & \
+echo "######################"
+
+RUN ./configure --prefix="${INSTPATH}" && \
 make -j && \
 make install -j
 
-RUN echo "YASM Complete"
+RUN echo "######################" && \
+echo "YASM Complete" && \
+echo "######################"
+
 
 ##################################################################
 ######################### libjpegturbo ###########################
 ##################################################################
+
+RUN echo "############################################################" && \
+echo "Libjpegturbo" & \
+echo "############################################################"
 
 ARG ljpt_major=1
 ARG ljpt_minor=1
@@ -156,16 +212,72 @@ RUN mkdir ljpt
 
 WORKDIR /DC/ljpt
 
+RUN echo "######################" && \
+echo "Download libjpegturbo..." && \
+echo "######################"
 
-RUN echo "Download libjpegturbo..." && \
-wget "https://sourceforge.net/projects/libjpeg-turbo/files/${ljpt_versn}%20%281.2beta1%29/libjpeg-turbo-${ljpt_versn}.tar.gz" && \
+RUN wget "https://sourceforge.net/projects/libjpeg-turbo/files/${ljpt_versn}%20%281.2beta1%29/libjpeg-turbo-${ljpt_versn}.tar.gz" && \
 tar xzvf libjpeg-turbo-${ljpt_versn}.tar.gz
 
 WORKDIR /DC/ljpt/libjpeg-turbo-${ljpt_versn}
 
-RUN echo "Build and install libjpegturbo...." && \
-./configure --prefix="$INSTPATH" && \
+RUN echo "######################" && \
+echo "Build and install libjpegturbo...." && \
+echo "######################"
+
+RUN ./configure --prefix="$INSTPATH" && \
 make -j && \
 make install -j
 
-RUN echo "Libjpegturbo Complete"
+RUN echo "######################" && \
+echo "Libjpegturbo Complete" && \
+echo "######################"
+
+############################################################
+######################### ffmpeg ###########################
+############################################################
+
+RUN echo "############################################################" && \
+echo "FFMPEG" & \
+echo "############################################################"
+
+ARG lame_major=3
+ARG lame_minor=99
+ARG lame_micro=5
+ARG lame_versn=${lame_major}.${lame_minor}.${lame_micro}
+
+ARG opus_major=1
+ARG opus_minor=0
+ARG opus_micro=2
+ARG opus_versn=${opus_major}.${opus_minor}.${opus_micro}
+
+ARG ogg_major=1
+ARG ogg_minor=1
+ARG ogg_micro=4
+ARG ogg_versn=${ogg_major}.${ogg_minor}.${ogg_micro}
+
+ARG theora_major=1
+ARG theora_minor=1
+ARG theora_micro=1
+ARG theora_versn=${theora_major}.${theora_minor}.${theora_micro}
+
+ARG vorbis_major=1
+ARG vorbis_minor=3
+ARG vorbis_micro=3
+ARG vorbis_versn=${vorbis_major}.${vorbis_minor}.${vorbis_micro}
+
+ARG vpx_major=1
+ARG vpx_minor=2
+ARG vpx_micro=0
+ARG vpx_versn=${vpx_major}.${vpx_minor}.${vpx_micro}
+
+ARG ffmpeg_major=0
+ARG ffmpeg_minor=9
+ARG ffmpeg_micro=1
+ARG ffmpeg_versn=${ffmpeg_major}.${ffmpeg_minor}.${ffmpeg_micro}
+
+WORKDIR /DC
+
+RUN mkdir ffmpeg
+
+WORKDIR /DC/ffmpeg
