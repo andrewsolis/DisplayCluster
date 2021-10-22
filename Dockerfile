@@ -21,14 +21,14 @@ ARG INSTPATH=/opt/apps
 ENV PATH="$PATH:${INSTPATH}/bin"
 ENV LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${INSTPATH}/lib"
 ENV INCLUDE="$INCLUDE:${INSTPATH}/include"
-ENV ncores=8
+ENV ncores=4
 ENV CFLAGS=-fPIC
 
 RUN mkdir DC
 
-#############################
-########## OpenMPI ##########
-#############################
+##########################################################
+######################## OpenMPI #########################
+##########################################################
 
 WORKDIR /DC
 
@@ -54,9 +54,9 @@ make install -j
 
 RUN echo "MPI Complete"
 
-###########################
-########## BOOST ##########
-###########################
+##########################################################
+######################### Boost ##########################
+##########################################################
 
 ARG boost_major=1
 ARG boost_minor=51
@@ -79,13 +79,13 @@ RUN echo "Build Boost..." && \
 ./bootstrap.sh --with-python=/usr/bin/python --with-python-version=2.7.5 --with-python-root=/usr --prefix="${INSTPATH}" --with-toolset=gcc --with-libraries=all
 
 RUN echo "Install Boost..." && \
-./b2 include="/usr/include/python2.7" --toolset=gcc --prefix="${INSTPATH}" install
+./b2 -j ${ncores} include="/usr/include/python2.7" --toolset=gcc --prefix="${INSTPATH}" install
 
 RUN echo "Boost Complete"
 
-#############################
-#########   NASM   ##########
-#############################
+##########################################################
+######################### NASM ###########################
+##########################################################
 
 WORKDIR /DC
 
