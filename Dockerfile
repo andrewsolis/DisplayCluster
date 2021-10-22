@@ -112,5 +112,34 @@ RUN echo "Build and install NASM..." && \
 make -j && \
 make install -j
 
-# RUN apt-get -y update && apt-get install -y fortunes
-# CMD ["sh", "-c", "/usr/games/fortune -a | cowsay"]
+RUN echo "NASM Complete"
+
+##########################################################
+######################### YASM ###########################
+##########################################################
+
+ARG yasm_major=1
+ARG yasm_minor=3
+ARG yasm_micro=0
+ARG yasm_versn=${yasm_major}.${yasm_minor}.${yasm_micro}
+
+WORKDIR /DC
+
+ENV CC=gcc
+
+RUN mkdir yasm
+
+WORKDIR /DC/yasm
+
+RUN echo "Download YASM...." && \ 
+wget http://www.tortall.net/projects/yasm/releases/yasm-${yasm_versn}.tar.gz && \
+tar xvfz yasm-${yasm_versn}.tar.gz
+
+WORKDIR /DC/yasm/yasm-${yasm_versn}
+
+RUN echo "Build and install YASM..." && \
+./configure --prefix="${INSTPATH}" && \
+make -j && \
+make install -j
+
+RUN echo "YASM Complete"
