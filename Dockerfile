@@ -87,6 +87,12 @@ RUN echo "Boost Complete"
 ######################### NASM ###########################
 ##########################################################
 
+ARG nasm_major=2
+ARG nasm_minor=14
+ARG nasm_micro=02
+ARG nasm_versn=${nasm_major}.${nasm_minor}.${nasm_micro}
+
+
 WORKDIR /DC
 
 ENV CC=gcc
@@ -96,8 +102,15 @@ RUN mkdir nasm
 WORKDIR /DC/nasm
 
 RUN echo "Download NASM...." && \ 
-wget https://www.nasm.us/pub/nasm/releasebuilds/2.14.02/nasm-2.14.02.tar.gz && \
-tar xvfz nasm-2.14.02.tar.gz
+wget https://www.nasm.us/pub/nasm/releasebuilds/${nasm_versn}/nasm-${nasm_versn}.tar.gz && \
+tar xvfz nasm-${nasm_versn}.tar.gz
+
+WORKDIR /DC/nasm/nasm-${nasm_versn}
+
+RUN echo "Build and install NASM..." && \
+./configure --prefix="${INSTPATH}" && \
+make -j && \
+make install -j
 
 # RUN apt-get -y update && apt-get install -y fortunes
 # CMD ["sh", "-c", "/usr/games/fortune -a | cowsay"]
