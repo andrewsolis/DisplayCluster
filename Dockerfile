@@ -281,3 +281,44 @@ WORKDIR /DC
 RUN mkdir ffmpeg
 
 WORKDIR /DC/ffmpeg
+
+RUN echo "######################" && \
+echo "x264...." & \
+echo "######################"
+
+RUN wget https://download.videolan.org/pub/videolan/x264/snapshots/x264-snapshot-20170101-2245-stable.tar.bz2 && \
+tar xvfj x264-snapshot-20170101-2245-stable.tar.bz2
+
+WORKDIR /DC/ffmpeg/x264-snapshot-20170101-2245-stable
+
+RUN ./configure --prefix="$INSTPATH" --enable-shared && \
+make -j ${ncores} && \
+make install -j ${ncores}
+
+WORKDIR /DC/ffmpeg
+RUN echo "######################" && \
+echo "mp3lame...." & \
+echo "######################"
+
+RUN curl -O -L https://downloads.sourceforge.net/project/lame/lame/${lame_major}.${lame_minor}/lame-${lame_versn}.tar.gz && \
+tar xzvf lame-${lame_versn}.tar.gz
+
+WORKDIR /DC/ffmpeg/lame-${lame_versn} 
+
+RUN ./configure --prefix="$INSTPATH" --disable-static --enable-nasm && \
+make -j ${ncores} && \
+make install -j ${ncores}
+
+WORKDIR /DC/ffmpeg
+RUN echo "######################" && \
+echo "ogg...." & \
+echo "######################"
+
+RUN wget http://downloads.xiph.org/releases/ogg/libogg-${ogg_versn}.tar.gz && \
+tar xzvf libogg-${ogg_versn}.tar.gz
+
+WORKDIR /DC/ffmpeg/libogg-${ogg_versn}
+
+RUN ./configure --prefix="$INSTPATH" --disable-static && \
+make -j ${ncores} && \
+make install -j ${ncores}
