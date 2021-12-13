@@ -13,8 +13,7 @@ RUN echo "Install Development Tools..." && \
 yum -y group install "Development Tools"
 
 RUN echo "Install prerequisites..." && \
-yum -y install git cmake wget zlib-devel bzip2-devel python2-devel vim
-
+yum -y install git cmake wget zlib-devel bzip2-devel python2-devel vim libX11-devel libXext-devel libXtst-devel
 
 ARG INSTPATH=/opt/apps
 
@@ -328,11 +327,115 @@ RUN echo "######################" && \
 echo "theora...." & \
 echo "######################"
 
-RUN wget http://downloads.xiph.org/releases/theora/libtheora-${theora_version}.tar.gz && \
-tar xzvf libtheora-${theora_version}.tar.gz
+RUN wget http://downloads.xiph.org/releases/theora/libtheora-${theora_versn}.tar.gz && \
+tar xzvf libtheora-${theora_versn}.tar.gz
 
-WORKDIR /DC/ffmpeg/libtheora-${theora_version}
+WORKDIR /DC/ffmpeg/libtheora-${theora_versn}
 
-RUN ./configure --prefix="$INSTPATH" --disable-static --with-ogg="$INSTPATH" \
-make -j ${ncores} && \
-make install -j ${ncores}
+RUN ./configure --prefix="$INSTPATH" --disable-static --with-ogg="$INSTPATH"
+RUN make -j ${ncores}
+RUN make install -j ${ncores}
+
+WORKDIR /DC/ffmpeg
+RUN echo "######################" && \
+echo "vorbis...." & \
+echo "######################"
+
+RUN wget http://downloads.xiph.org/releases/vorbis/libvorbis-${vorbis_versn}.tar.gz && \
+tar xzvf libvorbis-${vorbis_versn}.tar.gz
+
+WORKDIR /DC/ffmpeg/libvorbis-${vorbis_versn}
+
+RUN ./configure --prefix="$INSTPATH" --with-ogg="$INSTPATH" --disable-static
+RUN make -j ${ncores}
+RUN make install -j ${ncores}
+
+WORKDIR /DC/ffmpeg
+RUN echo "######################" && \
+echo "vpx...." & \
+echo "######################"
+
+RUN wget https://chromium.googlesource.com/webm/libvpx/+archive/v${vpx_versn}.tar.gz
+RUN mkdir vpx-${vpx_versn}
+RUN tar xzvf v${vpx_versn}.tar.gz -C vpx-${vpx_versn}
+
+WORKDIR /DC/ffmpeg/vpx-${vpx_versn}
+
+RUN ./configure --prefix="$INSTPATH" --disable-examples --disable-unit-tests --enable-shared --disable-static --as=yasm
+RUN make -j ${ncores}
+RUN make install -j ${ncores}
+
+WORKDIR /DC/ffmpeg
+RUN echo "######################" && \
+echo "ffmpeg...." & \
+echo "######################"
+
+RUN curl -O -L http://www.ffmpeg.org/releases/ffmpeg-${ffmpeg_versn}.tar.gz
+RUN tar xzvf ffmpeg-${ffmpeg_versn}.tar.gz
+
+WORKDIR /DC/ffmpeg/ffmpeg-${ffmpeg_versn}
+
+RUN ./configure --prefix="$INSTPATH" \
+  --extra-cflags="-I$INSTPATH/include" \
+  --extra-ldflags="-L$INSTPATH/lib" \
+  --extra-libs=-lpthread \
+  --extra-libs=-lm \
+  --bindir="$INSTPATH/bin" \
+  --enable-gpl \
+  --disable-static \
+  --enable-shared \
+  --enable-libmp3lame \
+  --enable-libtheora \
+  --enable-libvorbis \
+  --enable-libvpx \
+  --enable-libx264 \
+  --enable-nonfree
+
+RUN make -j ${ncores}
+RUN make install -j ${ncores}
+RUN hash -d $INSTPATH/ffmpeg
+
+RUN echo "######################" && \
+echo "FFMPEG Complete" && \
+echo "######################"
+
+############################################################
+########################## QT4 #############################
+############################################################
+
+RUN echo "############################################################" && \
+echo "QT4" & \
+echo "############################################################"
+
+ARG qt4_major=4
+ARG qt4_minor=8
+ARG qt4_micro=2
+ARG qt4_versn=${qt4_major}.${qt4_minor}.${qt4_micro}
+
+WORKDIR /DC
+
+RUN mkdir qt4
+
+WORKDIR /DC/qt4
+
+RUN echo "######################" && \
+echo "Download qt4..." && \
+echo "######################"
+
+RUN wget https://download.qt.io/archive/qt/${qt4_major}.${qt4_minor}/${qt4_versn}/qt-everywhere-opensource-src-${qt4_versn}.tar.gz
+RUN tar xzvf qt-everywhere-opensource-src-${qt4_versn}.tar.gz
+
+WORKDIR /DC/qt4/qt-everywhere-opensource-src-${qt4_versn}
+
+RUN echo "######################" && \
+echo "Build and install QT4...." && \
+echo "######################"
+
+RUN ./configure -opensource -confirm-license --prefix=$INSTPATH -release -nomake examples -nomake tests
+RUN make
+RUN make install
+
+
+RUN echo "######################" && \
+echo "QT4 Complete" && \
+echo "######################"
