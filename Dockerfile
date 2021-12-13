@@ -322,3 +322,17 @@ WORKDIR /DC/ffmpeg/libogg-${ogg_versn}
 RUN ./configure --prefix="$INSTPATH" --disable-static && \
 make -j ${ncores} && \
 make install -j ${ncores}
+
+WORKDIR /DC/ffmpeg
+RUN echo "######################" && \
+echo "theora...." & \
+echo "######################"
+
+RUN wget http://downloads.xiph.org/releases/theora/libtheora-${theora_version}.tar.gz && \
+tar xzvf libtheora-${theora_version}.tar.gz
+
+WORKDIR /DC/ffmpeg/libtheora-${theora_version}
+
+RUN ./configure --prefix="$INSTPATH" --disable-static --with-ogg="$INSTPATH" \
+make -j ${ncores} && \
+make install -j ${ncores}
