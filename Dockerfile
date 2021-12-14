@@ -3,26 +3,20 @@ FROM centos:centos7
 
 LABEL Name=displaycluster Version=0.0.1
 
-RUN echo "Update YUM..."   && \
-yum -y update
-
-RUN echo "Install EPEL..." && \
-yum -y install epel-release
-
-RUN echo "Install Development Tools..." && \
-yum -y group install "Development Tools"
-
-RUN echo "Install prerequisites..." && \
-yum -y install git cmake wget zlib-devel bzip2-devel python2-devel vim libX11-devel libXext-devel libXtst-devel
+RUN echo "Install Dependencies and prerequisites" && \
+yum -y update && \
+yum -y install epel-release && \
+yum -y group install "Development Tools" && \
+yum -y install git cmake wget zlib-devel bzip2-devel python2-devel vim libX11-devel libXext-devel libXtst-devel mesa-libGL-devel mesa-libGLU-devel
 
 ARG INSTPATH=/opt/apps
 
-ENV PATH="$PATH:${INSTPATH}/bin"
-ENV LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${INSTPATH}/lib"
-ENV INCLUDE="$INCLUDE:${INSTPATH}/include"
-ENV ncores=4
-ENV CFLAGS=-fPIC
-ENV CC=gcc
+ENV PATH="$PATH:${INSTPATH}/bin" \
+    LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${INSTPATH}/lib" \
+    INCLUDE="$INCLUDE:${INSTPATH}/include" \
+    ncores=4 \
+    CFLAGS=-fPIC \
+    CC=gcc
 
 RUN mkdir DC
 
@@ -30,53 +24,35 @@ RUN mkdir DC
 ######################## OpenMPI #########################
 ##########################################################
 
-RUN echo "############################################################" && \
-echo "OPENMPI" & \
-echo "############################################################"
-
 WORKDIR /DC
 
 RUN mkdir ompi
 
 WORKDIR /DC/ompi
 
-ARG ompi_major=1
-ARG ompi_minor=4
-ARG ompi_micro=1
-ARG ompi_versn=${ompi_major}.${ompi_minor}.${ompi_micro}
+ARG ompi_major=1 \ 
+    ompi_minor=4 \
+    ompi_micro=1
 
-RUN echo "######################" && \
-echo "Download OpenMPI..." & \
-echo "######################"
+ARG ompi_versn=${ompi_major}.${ompi_minor}.${ompi_micro}
  
 RUN wget https://download.open-mpi.org/release/open-mpi/v${ompi_major}.${ompi_minor}/openmpi-${ompi_versn}.tar.gz && \
 tar xzvf openmpi-${ompi_versn}.tar.gz
 
 WORKDIR /DC/ompi/openmpi-${ompi_versn}
 
-RUN echo "######################" && \
-echo "Build and Install OpenMPI..." & \
-echo "######################"
-
 RUN ./configure --enable-mpi-threads --prefix="${INSTPATH}" && \
 make -j && \
 make install -j
-
-RUN echo "######################" && \
-echo "MPI Complete" & \
-echo "######################"
 
 ##########################################################
 ######################### Boost ##########################
 ##########################################################
 
-RUN echo "############################################################" && \
-echo "Boost" & \
-echo "############################################################"
+ARG boost_major=1 \
+    boost_minor=51 \
+    boost_micro=0
 
-ARG boost_major=1
-ARG boost_minor=51
-ARG boost_micro=0
 ARG boost_versn=${boost_major}.${boost_minor}.${boost_micro}
 
 WORKDIR /DC
@@ -85,44 +61,24 @@ RUN mkdir boost
 
 WORKDIR /DC/boost
 
-RUN echo "######################" && \
-echo "Download Boost..." & \
-echo "######################"
-
 RUN wget https://sourceforge.net/projects/boost/files/boost/${boost_versn}/boost_${boost_major}_${boost_minor}_${boost_micro}.tar.gz && \
 tar xzvf boost_${boost_major}_${boost_minor}_${boost_micro}.tar.gz
 
 WORKDIR /DC/boost/boost_${boost_major}_${boost_minor}_${boost_micro}
 
-RUN echo "######################" && \
-echo "Build Boost" & \
-echo "######################"
+RUN ./bootstrap.sh --with-python=/usr/bin/python --with-python-version=2.7.5 --with-python-root=/usr --prefix="${INSTPATH}" --with-toolset=gcc --with-libraries=all && \
+    ./b2 -j ${ncores} include="/usr/include/python2.7" --toolset=gcc --prefix="${INSTPATH}" install
 
-RUN ./bootstrap.sh --with-python=/usr/bin/python --with-python-version=2.7.5 --with-python-root=/usr --prefix="${INSTPATH}" --with-toolset=gcc --with-libraries=all
-
-RUN echo "######################" && \
-echo "Install Boost..." & \
-echo "######################"
-
-RUN ./b2 -j ${ncores} include="/usr/include/python2.7" --toolset=gcc --prefix="${INSTPATH}" install
-
-RUN echo "######################" && \
-echo "Boost Complete" & \
-echo "######################"
 
 ##########################################################
 ######################### NASM ###########################
 ##########################################################
 
-RUN echo "############################################################" && \
-echo "NASM" & \
-echo "############################################################"
+ARG nasm_major=2 \
+    nasm_minor=14 \
+    nasm_micro=02
 
-ARG nasm_major=2
-ARG nasm_minor=14
-ARG nasm_micro=02
 ARG nasm_versn=${nasm_major}.${nasm_minor}.${nasm_micro}
-
 
 WORKDIR /DC
 
@@ -130,38 +86,23 @@ RUN mkdir nasm
 
 WORKDIR /DC/nasm
 
-RUN echo "######################" && \
-echo "Download NASM..." & \
-echo "######################"
-
 RUN wget https://www.nasm.us/pub/nasm/releasebuilds/${nasm_versn}/nasm-${nasm_versn}.tar.gz && \
 tar xvfz nasm-${nasm_versn}.tar.gz
 
 WORKDIR /DC/nasm/nasm-${nasm_versn}
 
-RUN echo "######################" && \
-echo "Build and Install NASM...." & \
-echo "######################"
-
 RUN ./configure --prefix="${INSTPATH}" && \
 make -j && \
 make install -j
-
-RUN echo "######################" && \
-echo "NASM Complete" & \
-echo "######################"
 
 ##########################################################
 ######################### YASM ###########################
 ##########################################################
 
-RUN echo "############################################################" && \
-echo "YASM" & \
-echo "############################################################"
+ARG yasm_major=1 \
+    yasm_minor=3 \
+    yasm_micro=0
 
-ARG yasm_major=1
-ARG yasm_minor=3
-ARG yasm_micro=0
 ARG yasm_versn=${yasm_major}.${yasm_minor}.${yasm_micro}
 
 WORKDIR /DC
@@ -170,39 +111,25 @@ RUN mkdir yasm
 
 WORKDIR /DC/yasm
 
-RUN echo "######################" && \
-echo "Download YASM...." & \
-echo "######################"
-
 RUN wget http://www.tortall.net/projects/yasm/releases/yasm-${yasm_versn}.tar.gz && \
 tar xvfz yasm-${yasm_versn}.tar.gz
 
 WORKDIR /DC/yasm/yasm-${yasm_versn}
 
-RUN echo "######################" && \
-echo "Build and Install YASM..." & \
-echo "######################"
 
 RUN ./configure --prefix="${INSTPATH}" && \
 make -j && \
 make install -j
-
-RUN echo "######################" && \
-echo "YASM Complete" && \
-echo "######################"
 
 
 ##################################################################
 ######################### libjpegturbo ###########################
 ##################################################################
 
-RUN echo "############################################################" && \
-echo "Libjpegturbo" & \
-echo "############################################################"
+ARG ljpt_major=1 \
+    ljpt_minor=1 \
+    ljpt_micro=90
 
-ARG ljpt_major=1
-ARG ljpt_minor=1
-ARG ljpt_micro=90
 ARG ljpt_versn=${ljpt_major}.${ljpt_minor}.${ljpt_micro}
 
 WORKDIR /DC
@@ -211,68 +138,53 @@ RUN mkdir ljpt
 
 WORKDIR /DC/ljpt
 
-RUN echo "######################" && \
-echo "Download libjpegturbo..." && \
-echo "######################"
-
 RUN wget "https://sourceforge.net/projects/libjpeg-turbo/files/${ljpt_versn}%20%281.2beta1%29/libjpeg-turbo-${ljpt_versn}.tar.gz" && \
 tar xzvf libjpeg-turbo-${ljpt_versn}.tar.gz
 
 WORKDIR /DC/ljpt/libjpeg-turbo-${ljpt_versn}
 
-RUN echo "######################" && \
-echo "Build and install libjpegturbo...." && \
-echo "######################"
-
 RUN ./configure --prefix="$INSTPATH" && \
 make -j && \
 make install -j
-
-RUN echo "######################" && \
-echo "Libjpegturbo Complete" && \
-echo "######################"
 
 ############################################################
 ######################### ffmpeg ###########################
 ############################################################
 
-RUN echo "############################################################" && \
-echo "FFMPEG" & \
-echo "############################################################"
+ARG lame_major=3  \
+    lame_minor=99 \
+    lame_micro=5 
 
-ARG lame_major=3
-ARG lame_minor=99
-ARG lame_micro=5
-ARG lame_versn=${lame_major}.${lame_minor}.${lame_micro}
+ARG lame_versn=${lame_major}.${lame_minor}.${lame_micro} \
+    opus_major=1  \
+    opus_minor=0  \
+    opus_micro=2
 
-ARG opus_major=1
-ARG opus_minor=0
-ARG opus_micro=2
-ARG opus_versn=${opus_major}.${opus_minor}.${opus_micro}
+ARG opus_versn=${opus_major}.${opus_minor}.${opus_micro} \ 
+    ogg_major=1  \
+    ogg_minor=1  \
+    ogg_micro=4
 
-ARG ogg_major=1
-ARG ogg_minor=1
-ARG ogg_micro=4
-ARG ogg_versn=${ogg_major}.${ogg_minor}.${ogg_micro}
+ARG ogg_versn=${ogg_major}.${ogg_minor}.${ogg_micro} \
+    theora_major=1 \
+    theora_minor=1 \
+    theora_micro=1
 
-ARG theora_major=1
-ARG theora_minor=1
-ARG theora_micro=1
-ARG theora_versn=${theora_major}.${theora_minor}.${theora_micro}
+ARG theora_versn=${theora_major}.${theora_minor}.${theora_micro} \
+    vorbis_major=1 \
+    vorbis_minor=3 \
+    vorbis_micro=3
 
-ARG vorbis_major=1
-ARG vorbis_minor=3
-ARG vorbis_micro=3
-ARG vorbis_versn=${vorbis_major}.${vorbis_minor}.${vorbis_micro}
+ARG vorbis_versn=${vorbis_major}.${vorbis_minor}.${vorbis_micro} \ 
+    vpx_major=1 \
+    vpx_minor=2 \
+    vpx_micro=0
 
-ARG vpx_major=1
-ARG vpx_minor=2
-ARG vpx_micro=0
-ARG vpx_versn=${vpx_major}.${vpx_minor}.${vpx_micro}
+ARG vpx_versn=${vpx_major}.${vpx_minor}.${vpx_micro} \
+    ffmpeg_major=0 \
+    ffmpeg_minor=9 \
+    ffmpeg_micro=1
 
-ARG ffmpeg_major=0
-ARG ffmpeg_minor=9
-ARG ffmpeg_micro=1
 ARG ffmpeg_versn=${ffmpeg_major}.${ffmpeg_minor}.${ffmpeg_micro}
 
 WORKDIR /DC
@@ -280,10 +192,6 @@ WORKDIR /DC
 RUN mkdir ffmpeg
 
 WORKDIR /DC/ffmpeg
-
-RUN echo "######################" && \
-echo "x264...." & \
-echo "######################"
 
 RUN wget https://download.videolan.org/pub/videolan/x264/snapshots/x264-snapshot-20170101-2245-stable.tar.bz2 && \
 tar xvfj x264-snapshot-20170101-2245-stable.tar.bz2
@@ -295,9 +203,6 @@ make -j ${ncores} && \
 make install -j ${ncores}
 
 WORKDIR /DC/ffmpeg
-RUN echo "######################" && \
-echo "mp3lame...." & \
-echo "######################"
 
 RUN curl -O -L https://downloads.sourceforge.net/project/lame/lame/${lame_major}.${lame_minor}/lame-${lame_versn}.tar.gz && \
 tar xzvf lame-${lame_versn}.tar.gz
@@ -309,9 +214,6 @@ make -j ${ncores} && \
 make install -j ${ncores}
 
 WORKDIR /DC/ffmpeg
-RUN echo "######################" && \
-echo "ogg...." & \
-echo "######################"
 
 RUN wget http://downloads.xiph.org/releases/ogg/libogg-${ogg_versn}.tar.gz && \
 tar xzvf libogg-${ogg_versn}.tar.gz
@@ -323,9 +225,6 @@ make -j ${ncores} && \
 make install -j ${ncores}
 
 WORKDIR /DC/ffmpeg
-RUN echo "######################" && \
-echo "theora...." & \
-echo "######################"
 
 RUN wget http://downloads.xiph.org/releases/theora/libtheora-${theora_versn}.tar.gz && \
 tar xzvf libtheora-${theora_versn}.tar.gz
@@ -337,9 +236,6 @@ RUN make -j ${ncores}
 RUN make install -j ${ncores}
 
 WORKDIR /DC/ffmpeg
-RUN echo "######################" && \
-echo "vorbis...." & \
-echo "######################"
 
 RUN wget http://downloads.xiph.org/releases/vorbis/libvorbis-${vorbis_versn}.tar.gz && \
 tar xzvf libvorbis-${vorbis_versn}.tar.gz
@@ -351,9 +247,6 @@ RUN make -j ${ncores}
 RUN make install -j ${ncores}
 
 WORKDIR /DC/ffmpeg
-RUN echo "######################" && \
-echo "vpx...." & \
-echo "######################"
 
 RUN wget https://chromium.googlesource.com/webm/libvpx/+archive/v${vpx_versn}.tar.gz
 RUN mkdir vpx-${vpx_versn}
@@ -366,9 +259,6 @@ RUN make -j ${ncores}
 RUN make install -j ${ncores}
 
 WORKDIR /DC/ffmpeg
-RUN echo "######################" && \
-echo "ffmpeg...." & \
-echo "######################"
 
 RUN curl -O -L http://www.ffmpeg.org/releases/ffmpeg-${ffmpeg_versn}.tar.gz
 RUN tar xzvf ffmpeg-${ffmpeg_versn}.tar.gz
@@ -391,25 +281,18 @@ RUN ./configure --prefix="$INSTPATH" \
   --enable-libx264 \
   --enable-nonfree
 
-RUN make -j ${ncores}
-RUN make install -j ${ncores}
-RUN hash -d $INSTPATH/ffmpeg
-
-RUN echo "######################" && \
-echo "FFMPEG Complete" && \
-echo "######################"
+RUN make -j ${ncores} && \
+    make install -j ${ncores} && \
+    hash -d $INSTPATH/ffmpeg
 
 ############################################################
 ########################## QT4 #############################
 ############################################################
 
-RUN echo "############################################################" && \
-echo "QT4" & \
-echo "############################################################"
+ARG qt4_major=4 \
+    qt4_minor=8 \
+    qt4_micro=2
 
-ARG qt4_major=4
-ARG qt4_minor=8
-ARG qt4_micro=2
 ARG qt4_versn=${qt4_major}.${qt4_minor}.${qt4_micro}
 
 WORKDIR /DC
@@ -418,24 +301,42 @@ RUN mkdir qt4
 
 WORKDIR /DC/qt4
 
-RUN echo "######################" && \
-echo "Download qt4..." && \
-echo "######################"
-
 RUN wget https://download.qt.io/archive/qt/${qt4_major}.${qt4_minor}/${qt4_versn}/qt-everywhere-opensource-src-${qt4_versn}.tar.gz
 RUN tar xzvf qt-everywhere-opensource-src-${qt4_versn}.tar.gz
 
 WORKDIR /DC/qt4/qt-everywhere-opensource-src-${qt4_versn}
 
-RUN echo "######################" && \
-echo "Build and install QT4...." && \
-echo "######################"
-
-RUN ./configure -opensource -confirm-license --prefix=$INSTPATH -release -nomake examples -nomake tests
-RUN make
-RUN make install
+RUN ./configure -opensource -confirm-license --prefix=$INSTPATH -release -nomake examples -nomake tests && \
+    make -j ${ncores} && \
+    make install -j ${ncores}
 
 
-RUN echo "######################" && \
-echo "QT4 Complete" && \
-echo "######################"
+##########################################################
+##################### DisplayCluster #####################
+##########################################################
+
+WORKDIR /DC
+
+RUN mkdir displaycluster
+
+WORKDIR /DC/displaycluster
+
+RUN git clone https://github.com/TACC/DisplayCluster.git
+WORKDIR /DC/displaycluster/DisplayCluster
+
+RUN git checkout 40e25afdeba69ef53df252c065a210fd716fffe4 && \
+    mkdir Build
+
+WORKDIR /DC/displaycluster/DisplayCluster/build
+
+ARG CPPFLAGS="-I/usr/include/python2.7"
+
+RUN cmake -DBUILD_DISPLAYCLUSTER=ON -DQT_MOC_EXECUTABLE=$INSTPATH/bin/moc -DQT_RCC_EXECUTABLE=$INSTPATH/bin/rcc  \ 
+          -DQT_UIC_EXECUTABLE=$INSTPATH/bin/uic -DLibJpegTurbo_LIBRARY=$INSTPATH/lib/libturbojpeg.so \ 
+          -DFFMPEG_avcodec_LIBRARY=$INSTPATH/lib/libavcodec.so -DFFMPEG_avformat_LIBRARY=$INSTPATH/lib/libavformat.so \ 
+          -DFFMPEG_avutil_LIBRARY=$INSTPATH/lib/libavutil.so -DFFMPEG_swscale_LIBRARY=$INSTPATH/lib/libswscale.so \ 
+          -DFFMPEG_theora_LIBRARY=$INSTPATH/lib/libtheora.so -DFFMPEG_vorbis_LIBRARY=$INSTPATH/lib/libvorbis.so \ 
+          -DFFMPEG_vorbisenc_LIBRARY=$INSTPATH/lib/libvorbisenc.so -DCMAKE_INSTALL_PREFIX=$INSTPATH ../
+
+RUN make -j ${ncores} && \
+    make install -j ${ncores}
