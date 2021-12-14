@@ -340,3 +340,6 @@ RUN cmake -DBUILD_DISPLAYCLUSTER=ON -DQT_MOC_EXECUTABLE=$INSTPATH/bin/moc -DQT_R
 
 RUN make -j ${ncores} && \
     make install -j ${ncores}
+
+
+RUN cp /DC/displaycluster/DisplayCluster/examples/configuration.xml $INSTPATH
