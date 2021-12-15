@@ -364,3 +364,5 @@ ENV PATH="$PATH:${INSTPATH}/bin" \
 WORKDIR /opt/apps
 
 COPY --from=builder /opt/apps/ ./
+
+CMD [ "startdisplaycluster" ]
