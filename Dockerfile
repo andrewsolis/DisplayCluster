@@ -1,5 +1,5 @@
 # Pull base image
-FROM centos:centos7
+FROM centos:centos7 AS builder
 
 LABEL Name=displaycluster Version=0.0.1
 
@@ -343,3 +343,24 @@ RUN make -j ${ncores} && \
 
 
 RUN cp /DC/displaycluster/DisplayCluster/examples/configuration.xml $INSTPATH
+
+FROM centos:centos7
+
+RUN echo "Install Dependencies and prerequisites on build image" && \
+yum -y update && \
+yum -y install epel-release && \
+yum -y group install "Development Tools" && \
+yum -y install git cmake wget zlib-devel bzip2-devel python2-devel vim libX11-devel libXext-devel libXtst-devel mesa-libGL-devel mesa-libGLU-devel
+
+ENV INSTPATH=/opt/apps
+
+ENV PATH="$PATH:${INSTPATH}/bin" \
+    LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${INSTPATH}/lib" \
+    INCLUDE="$INCLUDE:${INSTPATH}/include" \
+    ncores=4 \
+    CFLAGS=-fPIC \
+    CC=gcc
+
+WORKDIR /opt/apps
+
+COPY --from=builder /opt/apps/ ./
