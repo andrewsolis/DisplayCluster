@@ -73,7 +73,10 @@ Configuration * g_configuration = NULL;
 boost::shared_ptr<DisplayGroupManager> g_displayGroupManager;
 MainWindow * g_mainWindow = NULL;
 NetworkListener * g_networkListener = NULL;
-Remote * g_Remote = NULL;
+
+#if ENABLE_PYTHON_SUPPORT
+    Remote * g_Remote = NULL;
+#endif
 long g_frameCount = 0;
 
 int main(int argc, char * argv[])
