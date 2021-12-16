@@ -42,8 +42,7 @@
 #include <mpi.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include "SSaver.h"
-#include "Remote.h"
+
 
 #if ENABLE_TUIO_TOUCH_LISTENER
     #include "TouchListener.h"
@@ -58,6 +57,11 @@
     #include "SkeletonThread.h"
 
     SkeletonThread * g_skeletonThread = NULL;
+#endif
+
+#if ENABLE_PYTHON_SUPPORT
+#include "SSaver.h"
+#include "Remote.h"
 #endif
 
 std::string g_displayClusterDir;
@@ -174,7 +178,10 @@ int main(int argc, char * argv[])
     if(g_mpiRank == 0)
     {
         g_networkListener = new NetworkListener();
-        g_Remote = new Remote();
+
+        #if ENABLE_PYTHON_SUPPORT
+            g_Remote = new Remote();
+        #endif
     }
 
     g_mainWindow = new MainWindow();

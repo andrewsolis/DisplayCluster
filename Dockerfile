@@ -321,15 +321,14 @@ RUN mkdir displaycluster
 
 WORKDIR /DC/displaycluster
 
-RUN git clone https://github.com/TACC/DisplayCluster.git
+RUN git clone https://github.com/andrewsolis/DisplayCluster.git
 WORKDIR /DC/displaycluster/DisplayCluster
 
-RUN git checkout 40e25afdeba69ef53df252c065a210fd716fffe4 && \
-    mkdir Build
+RUN mkdir Build
 
 WORKDIR /DC/displaycluster/DisplayCluster/build
 
-ARG CPPFLAGS="-I/usr/include/python2.7"
+# ARG CPPFLAGS="-I/usr/include/python2.7"
 
 RUN cmake -DBUILD_DISPLAYCLUSTER=ON -DQT_MOC_EXECUTABLE=$INSTPATH/bin/moc -DQT_RCC_EXECUTABLE=$INSTPATH/bin/rcc  \ 
           -DQT_UIC_EXECUTABLE=$INSTPATH/bin/uic -DLibJpegTurbo_LIBRARY=$INSTPATH/lib/libturbojpeg.so \ 
@@ -338,36 +337,36 @@ RUN cmake -DBUILD_DISPLAYCLUSTER=ON -DQT_MOC_EXECUTABLE=$INSTPATH/bin/moc -DQT_R
           -DFFMPEG_theora_LIBRARY=$INSTPATH/lib/libtheora.so -DFFMPEG_vorbis_LIBRARY=$INSTPATH/lib/libvorbis.so \ 
           -DFFMPEG_vorbisenc_LIBRARY=$INSTPATH/lib/libvorbisenc.so -DCMAKE_INSTALL_PREFIX=$INSTPATH ../
 
-RUN make -j ${ncores} && \
-    make install -j ${ncores}
+# RUN make && \
+#     make install
 
+# # RUN make -j ${ncores} && \
+# #     make install -j ${ncores}
 
-RUN cp /DC/displaycluster/DisplayCluster/examples/configuration.xml $INSTPATH
+# RUN cp /DC/displaycluster/DisplayCluster/examples/configuration.xml $INSTPATH
 
-FROM centos:centos7
+# FROM centos:centos7
 
-RUN echo "Install Dependencies and prerequisites on build image" && \
-yum -y update && \
-yum -y install epel-release && \
-yum -y group install "Development Tools" && \
-yum -y install git cmake wget zlib-devel bzip2-devel python2-devel vim libX11-devel libXext-devel libXtst-devel mesa-libGL-devel mesa-libGLU-devel
+# RUN echo "Install Dependencies and prerequisites on build image" && \
+# yum -y update && \
+# yum -y install epel-release && \
+# yum -y group install "Development Tools" && \
+# yum -y install git cmake wget zlib-devel bzip2-devel python2-devel vim libX11-devel libXext-devel libXtst-devel mesa-libGL-devel mesa-libGLU-devel
 
-ENV INSTPATH=/opt/apps
+# ENV INSTPATH=/opt/apps
 
-ENV PATH="$PATH:${INSTPATH}/bin" \
-    LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${INSTPATH}/lib" \
-    INCLUDE="$INCLUDE:${INSTPATH}/include" \
-    ncores=4 \
-    CFLAGS=-fPIC \
-    CC=gcc
+# ENV PATH="$PATH:${INSTPATH}/bin" \
+#     LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${INSTPATH}/lib" \
+#     INCLUDE="$INCLUDE:${INSTPATH}/include" \
+#     ncores=4 \
+#     CFLAGS=-fPIC \
+#     CC=gcc
 
-WORKDIR /opt/apps
+# WORKDIR /opt/apps
 
-COPY --from=builder /opt/apps/ ./
+# COPY --from=builder /opt/apps/ ./
 
-ENV IPHOST=host.docker.internal
-
-RUN sed -i 's/display=\":0\"/display=\"192.168.0.27:0\"/g' configuration.xml
+# RUN sed -i 's/display=\":0\"/display=\"192.168.0.27:0\"/g' configuration.xml
 
 # CMD [ "startdisplaycluster" ]
 
