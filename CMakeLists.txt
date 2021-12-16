@@ -172,7 +172,6 @@ if(BUILD_DISPLAYCLUSTER)
         src/PixelStream.cpp
         src/PixelStreamContent.cpp
         src/PixelStreamSource.cpp
-        src/Remote.cpp
         src/SVG.cpp
         src/SVGContent.cpp
         src/SVGStreamSource.cpp
