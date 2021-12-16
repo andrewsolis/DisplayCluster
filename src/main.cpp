@@ -64,8 +64,12 @@
 #include "Remote.h"
 #endif
 
+
+// #if Enable_PYTHON_SUPPORT
+    QApplication * g_app = NULL;
+// #endif
+
 std::string g_displayClusterDir;
-QApplication * g_app = NULL;
 int g_mpiRank = 0;
 int g_mpiSize = 1;
 MPI_Comm g_mpiRenderComm;
@@ -119,11 +123,12 @@ int main(int argc, char * argv[])
    // }
 #endif
 
+#if ENABLE_PYTHON_SUPPORT
 		if (g_mpiRank == 0)
 			g_app = (QApplication *) new QSSApplication(argc, argv);
 		else
-			g_app = new QApplication(argc, argv);
-
+#endif
+           g_app = new QApplication(argc, argv);
 
     g_configuration = new Configuration((std::string(g_displayClusterDir) + std::string("/configuration.xml")).c_str());
 		setenv("DISPLAY", g_configuration->getMyDisplay().c_str(), 1);
@@ -182,9 +187,9 @@ int main(int argc, char * argv[])
     {
         g_networkListener = new NetworkListener();
 
-        #if ENABLE_PYTHON_SUPPORT
-            g_Remote = new Remote();
-        #endif
+#if ENABLE_PYTHON_SUPPORT
+        g_Remote = new Remote();
+#endif
     }
 
     g_mainWindow = new MainWindow();
