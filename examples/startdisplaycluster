@@ -79,6 +79,6 @@ startCommand = mpirunCommand + ' -x DISPLAYCLUSTER_DIR -x PYTHONPATH -host ' + h
 
 print 'launching with command: ' + startCommand
 
-subprocess.Popen(['python', '%s/remote/app.py' % dcPath])
+# subprocess.Popen(['python', '%s/remote/app.py' % dcPath])
 subprocess.call(shlex.split(startCommand))
 os.system("kill -- -%s" % os.getpid())
