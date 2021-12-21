@@ -362,7 +362,7 @@ WORKDIR /opt/apps
 
 COPY --from=builder /opt/apps/ ./
 
-RUN sed -i 's/display=\":0\"/display=\"192.168.0.27:0\"/g' configuration.xml
+RUN sed -i 's/display=\":0\"/display=\":1\"/g' configuration.xml
 
 CMD [ "startdisplaycluster" ]
 
